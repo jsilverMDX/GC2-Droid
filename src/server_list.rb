@@ -73,14 +73,14 @@ class ServerList
 
           linear_layout do
             text_view :text => "Handle"
-            @handle_text = edit_text :width => 200, :text => pref[:handle]
+            @handle_text = edit_text :width => 200, :text => 'jsilver' #pref[:handle]
             text_view :text => "Host"
-            @host_text = edit_text :width => 200, :text => pref[:host]
+            @host_text = edit_text :width => 350, :text => 'globalchat2.net' #pref[:host]
           end
 
           linear_layout do
             text_view :text => "Port"
-            @port_text = edit_text :width => 200, :text => pref[:port]
+            @port_text = edit_text :width => 200, :text => '9994' #pref[:port]
             text_view :text => "Password"
             @password_text = edit_text :width => 200, :transformation_method => android.text.method.PasswordTransformationMethod.new
           end
