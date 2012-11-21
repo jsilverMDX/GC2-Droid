@@ -18,7 +18,7 @@ class GlobalChatActivity
       self.content_view =
       linear_layout :orientation => :vertical do
         linear_layout :layout => {:width= => :fill_parent, :height= => 310} do
-          nicks_table = list_view :list => [], :layout => {:width= => 200, :height= => :fill_parent}
+          nicks_table = list_view :list => ['jsilver'], :layout => {:width= => 200, :height= => :fill_parent}
           chat_window_text = text_view :text => '', :layout => {:width= => 280, :height= => :fill_parent}
           gcc.nicks_table = nicks_table
           gcc.chat_window_text = chat_window_text
@@ -34,7 +34,7 @@ class GlobalChatActivity
       gcc.handle = $handle
       gcc.password = $password
       gcc.activity = $activity
-      gcc.sign_on
+      gcc.autoreconnect if gcc.sign_on == false
 
     end
 

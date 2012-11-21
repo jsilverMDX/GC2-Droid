@@ -30,7 +30,6 @@ class GlobalChatController
     @mutex = Mutex.new
     @nicks = []
     @chat_buffer = ""
-    p @nicks_table
   end
 
   def cleanup
@@ -70,23 +69,24 @@ class GlobalChatController
 
     return if (@host == "" || @port == "")
 
-    Thread.new do
-      begin
-        @ts = TCPSocket.new(@host, @port)
-      rescue
-        log "Could not connect to GlobalChat server."
-        sleep 5
-        return false
-      end
-      sign_on_array = @password == "" ? [@handle] : [@handle, @password]
-      send_message("SIGNON", sign_on_array)
-      begin_async_read_queue
+    #Thread.new do
+    begin
+      @ts = TCPSocket.new(@host, @port)
+    rescue
+      log "Could not connect to GlobalChat server."
+      sleep 5
+      return false
     end
+    sign_on_array = @password == "" ? [@handle] : [@handle, @password]
+    send_message("SIGNON", sign_on_array)
+    begin_async_read_queue
+    #end
     $autoreconnect = true
     true
   end
 
   def return_to_server_list
+    puts "returned to server list"
     $autoreconnect = false
     @ts.disconnect
     #... load SL activity
@@ -119,11 +119,12 @@ class GlobalChatController
   end
 
   def reload_nicks
-    #   #@activity.run_on_ui_thread do
-    #   if @nicks_table && @nicks
-    #     @nicks_table.reload_list(@nicks)
-    #   end
-    #   #end
+    p @nicks_table
+    #@activity.run_on_ui_thread do
+    unless @nicks_table.nil? || @nicks.nil?
+      @nicks_table.reload_list(@nicks)
+    end
+    #end
   end
 
   def parse_line(line)
@@ -135,7 +136,7 @@ class GlobalChatController
       @handle = parr[2]
       @server_name = parr[3]
       log "Connected to #{@server_name} \n"
-      ping
+      # ping
       get_handles
       get_log
       $connected = true
@@ -165,9 +166,11 @@ class GlobalChatController
     elsif command == "ALERT"
       $autoreconnect = false
       text = parr[1]
-      log("#{text}\n") do
-        return_to_server_list
-      end
+      log(text)
+      return_to_server_list
+      # log("#{text}\n") do
+      #   return_to_server_list
+      # end
     end
   end
 

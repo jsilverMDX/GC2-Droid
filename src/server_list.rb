@@ -30,7 +30,6 @@ class ServerList
   def on_stop
     super
     puts "saving preferences"
-    save_preferences(:handle => @handle_text.getText.toString, :host => @host_text.getText.toString, :port => @port_text.getText.toString)
   end
 
 
@@ -98,6 +97,7 @@ class ServerList
 
 
   def start_gc2_activity
+    save_preferences(:handle => @handle_text.getText.toString, :host => @host_text.getText.toString, :port => @port_text.getText.toString)
     i = android.content.Intent.new
     i.setClassName($package_name, 'org.ruboto.RubotoActivity')
     configBundle = android.os.Bundle.new
