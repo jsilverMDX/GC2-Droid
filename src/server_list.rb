@@ -103,10 +103,14 @@ class ServerList
     configBundle = android.os.Bundle.new
     configBundle.put_string('ClassName', 'GlobalChatActivity')
     i.putExtra('RubotoActivity Config', configBundle)
-    intent.putExtra("host", @host_text.getText.toString)
-    intent.putExtra("port", @port_text.getText.toString)
-    intent.putExtra("handle", @handle_text.getText.toString)
-    intent.putExtra("password", @password_text.getText.toString)
+    # intent.putExtra("host", @host_text.getText.toString)
+    $host = @host_text.getText.toString
+    # intent.putExtra("port", @port_text.getText.toString)
+    $port = @port_text.getText.toString
+    # intent.putExtra("handle", @handle_text.getText.toString)
+    $handle = @handle_text.getText.toString
+    # intent.putExtra("password", @password_text.getText.toString)
+    $password = @password_text.getText.toString
 
     startActivity(i)
   end

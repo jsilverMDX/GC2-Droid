@@ -30,6 +30,7 @@ class GlobalChatController
     @mutex = Mutex.new
     @nicks = []
     @chat_buffer = ""
+    p @nicks_table
   end
 
   def cleanup
@@ -69,7 +70,6 @@ class GlobalChatController
 
     return if (@host == "" || @port == "")
 
-    log "Connecting to: #{@host} #{@port}"
     Thread.new do
       begin
         @ts = TCPSocket.new(@host, @port)
@@ -119,11 +119,11 @@ class GlobalChatController
   end
 
   def reload_nicks
-    @activity.run_on_ui_thread do
-      if @nicks_table && @nicks
-        @nicks_table.reload_list(@nicks)
-      end
-    end
+    #   #@activity.run_on_ui_thread do
+    #   if @nicks_table && @nicks
+    #     @nicks_table.reload_list(@nicks)
+    #   end
+    #   #end
   end
 
   def parse_line(line)
@@ -131,9 +131,11 @@ class GlobalChatController
     command = parr.first
     if command == "TOKEN"
       $autoreconnect = true
-      @last_ping = Time.now # fake ping
       @chat_token = parr[1]
       @handle = parr[2]
+      @server_name = parr[3]
+      log "Connected to #{@server_name} \n"
+      ping
       get_handles
       get_log
       $connected = true

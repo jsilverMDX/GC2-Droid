@@ -1,7 +1,9 @@
-# require 'ruboto/widget'
-# require 'ruboto/util/toast'
+require 'ruboto/widget'
+require 'ruboto/util/toast'
+require 'ruboto/activity'
 
-# ruboto_import_widgets :Button, :LinearLayout, :TextView, :ListView
+
+ruboto_import_widgets :LinearLayout, :TextView, :ListView, :EditText
 
 class GlobalChatActivity
   require 'global_chat_controller'
@@ -10,39 +12,34 @@ class GlobalChatActivity
     super
     set_title 'GlobalChat2'
 
-    @host = $activity.getIntent.getExtras.get("host")
-    @port = $activity.getIntent.getExtras.get("port")
-    @handle = $activity.getIntent.getExtras.get("handle")
-    @password = $activity.getIntent.getExtras.get("password")
-
-
-    p $activity.getIntent.putExtras($activity.getIntent) #(android.os.Bundle)
-
-    @gca = self
-
     $activity.run_on_ui_thread do
-      @gca.content_view =
+      gcc = GlobalChatController.new
+
+      self.content_view =
       linear_layout :orientation => :vertical do
         linear_layout :layout => {:width= => :fill_parent, :height= => 310} do
-          @nicks_table = list_view :layout => {:width= => 141, :height= => :fill_parent}
-          @chat_window_text = text_view :layout => {:width= => 339, :height= => :fill_parent}
+          nicks_table = list_view :list => [], :layout => {:width= => 200, :height= => :fill_parent}
+          chat_window_text = text_view :text => '', :layout => {:width= => 280, :height= => :fill_parent}
+          gcc.nicks_table = nicks_table
+          gcc.chat_window_text = chat_window_text
         end
         linear_layout :orientation => :vertical, :layout => {:width= => :fill_parent, :height= => 60} do
-          @chat_message = edit_text :text => '', :layout => {:width= => :fill_parent}
+          chat_message = edit_text :text => '', :layout => {:width= => :fill_parent}
+          gcc.chat_message = chat_message
         end
       end
+
+      gcc.host = $host
+      gcc.port = $port
+      gcc.handle = $handle
+      gcc.password = $password
+      gcc.activity = $activity
+      gcc.sign_on
+
     end
 
-    @gcc = GlobalChatController.new
-    @gcc.chat_message = @chat_message
-    @gcc.nicks_table = @nicks_table
-    @gcc.chat_window_text = @chat_window_text
-    @gcc.activity = $activity
-    @gcc.host = @host
-    @gcc.port = @port
-    @gcc.handle = @handle
-    @gcc.password = @password
-    @gcc.sign_on
 
   end
+
+
 end
