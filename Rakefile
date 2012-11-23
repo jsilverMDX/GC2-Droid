@@ -44,5 +44,6 @@ end
 
 task :build do
   Rake::Task['del'].invoke
-  Rake::Task['install'].invoke('clean start')
+  Rake::Task['install'].invoke('clean')
+  Rake::Task['start'].invoke
 end

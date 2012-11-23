@@ -36,17 +36,17 @@ class GlobalChatController
   end
 
   def sendMessage(message)
-    begin
-      $activity.run_on_ui_thread do
-        @message = @chat_message.getText.toString
-        if @message != ""
-          post_message(@message)
-          @chat_message.setText('')
-        end
+    # begin
+    $activity.run_on_ui_thread do
+      @message = @chat_message.getText.toString
+      if @message != ""
+        post_message(@message)
+        @chat_message.setText('')
       end
-    rescue
-      autoreconnect
     end
+    # rescue
+    # autoreconnect
+    # end
   end
 
   def scroll_the_scroll_view_down
@@ -57,18 +57,21 @@ class GlobalChatController
 
   def update_chat_views
     $activity.run_on_ui_thread do
-      @chat_window_text.setText(@chat_buffer)
+      if !(@chat_window_text == nil) && !(@scroll_view == nil)
+        @chat_window_text.setText(@chat_buffer)
+        @scroll_view.fullScroll(130)
+      end
     end
   end
 
   def sign_on
-    begin
-      @ts = TCPSocket.open(@host, @port)
-    rescue
-      log("Could not connect to GlobalChat server. Will retry in 5 seconds.")
-      sleep 5
-      return false
-    end
+    # begin
+    @ts = TCPSocket.open(@host, @port)
+    # rescue
+    #   log("Could not connect to GlobalChat server. Will retry in 5 seconds.")
+    #   sleep 5
+    #   return false
+    # end
     @last_ping = Time.now # fake ping
     sign_on_array = @password == "" ? [@handle] : [@handle, @password]
     send_message("SIGNON", sign_on_array)
@@ -77,15 +80,15 @@ class GlobalChatController
     true
   end
 
-  def autoreconnect
-    unless $autoreconnect == false
-      loop do
-        if sign_on #start_client
-          break
-        end
-      end
-    end
-  end
+  # def autoreconnect
+  #   unless $autoreconnect == false
+  #     loop do
+  #       if sign_on #start_client
+  #         break
+  #       end
+  #     end
+  #   end
+  # end
 
 
   def return_to_server_list
@@ -104,40 +107,33 @@ class GlobalChatController
     Thread.new do
       loop do
         data = ""
-        sleep 0.1
-        begin
-          while line = @ts.recv(1)
-            raise if @last_ping < Time.now - 30
-            break if line == "\0"
-            data += line
-          end
-        rescue
-          autoreconnect
-          break
+        # sleep 0.1
+        # begin
+        while line = @ts.recv(1)
+          # raise if @last_ping < Time.now - 30
+          break if line == "\0"
+          data += line
         end
-        p data
+        # rescue
+        #   autoreconnect
+        #   break
+        # end
+
         parse_line(data)
       end
     end
   end
 
   def reload_nicks
-    # p @nicks_table
     $activity.run_on_ui_thread do
-      if !@nicks_table.nil? && !@nicks.nil?
-        # begin
-        #   @nicks_table.reload_list(@nicks)
-        # rescue
-        #   log "crashed trying to handle handles"
-        #   log "nicks table #{@nicks_table.inspect}"
-        #   log "nicks table #{@nicks.inspect}"
-
-        # end
+      if !@nicks_table == nil && !@nicks == nil
+        @nicks_table.reload_list(@nicks)
       end
     end
   end
 
   def parse_line(line)
+    p line
     parr = line.split("::!!::")
     command = parr.first
     if command == "TOKEN"
@@ -189,13 +185,13 @@ class GlobalChatController
   end
 
   def sock_send io, msg
-    begin
-      p msg
-      msg = "#{msg}\0"
-      io.send msg, 0
-    rescue
-      autoreconnect
-    end
+    # begin
+    p msg
+    msg = "#{msg}\0"
+    io.send msg, 0
+    # rescue
+    # autoreconnect
+    # end
   end
 
   def post_message(message)
@@ -236,6 +232,7 @@ class GlobalChatController
   end
 
   def output_to_chat_window str
+    puts str
     @mutex.synchronize do
       @chat_buffer += "#{str}"
       update_and_scroll

@@ -93,7 +93,7 @@ class ServerList
             end
 
             linear_layout :orientation => :horizontal do
-              button :text => "Connect", :on_click_listener => proc { start_gc2_activity }
+              @connect_button = button :text => "Connect", :on_click_listener => proc { start_gc2_activity }
               button :text => "Refresh", :on_click_listener => proc { refresh_me }
             end
 
@@ -106,6 +106,7 @@ class ServerList
 
 
   def start_gc2_activity
+    # @connect_button.setVisibility(8)
     save_preferences(:handle => @handle_text.getText.toString, :host => @host_text.getText.toString, :port => @port_text.getText.toString)
     i = android.content.Intent.new
     i.setClassName($package_name, 'org.ruboto.RubotoActivity')
