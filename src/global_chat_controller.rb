@@ -3,12 +3,9 @@ require 'socket'
 
 class GlobalChatController
 
-
-
   attr_accessor :chat_token,
   :chat_buffer,
-  :nicks,
-  :handle,
+  :nicks, :handle,
   :handle_text_field,
   :connect_button,
   :server_list_window,
@@ -23,13 +20,12 @@ class GlobalChatController
   :port,
   :password,
   :ts,
-  :activity
-
+  :msg_count
 
   def initialize
     @mutex = Mutex.new
-    @nicks = []
-    @chat_buffer = ""
+    @sent_messages = []
+    @sent_msg_index = 0
   end
 
   def cleanup
@@ -39,18 +35,18 @@ class GlobalChatController
     @chat_window_text.setText('')
   end
 
-  def sendMessage
-    # begin
-    $activity.run_on_ui_thread do
-      @message = @chat_window_text.getText.toString
-      if @message != ""
-        post_message(@message)
-        @chat_window_text.setText('')
+  def sendMessage(message)
+    begin
+      $activity.run_on_ui_thread do
+        @message = @chat_message.getText.toString
+        if @message != ""
+          post_message(@message)
+          @chat_message.setText('')
+        end
       end
+    rescue
+      autoreconnect
     end
-    # rescue
-    #   autoreconnect
-    # end
   end
 
   def scroll_the_scroll_view_down
@@ -66,22 +62,31 @@ class GlobalChatController
   end
 
   def sign_on
-
-    return if (@host == "" || @port == "")
-
     begin
-      @ts = TCPSocket.new(@host, @port)
+      @ts = TCPSocket.open(@host, @port)
     rescue
-      log "Could not connect to GlobalChat server."
+      log("Could not connect to GlobalChat server. Will retry in 5 seconds.")
       sleep 5
       return false
     end
+    @last_ping = Time.now # fake ping
     sign_on_array = @password == "" ? [@handle] : [@handle, @password]
     send_message("SIGNON", sign_on_array)
     begin_async_read_queue
     $autoreconnect = true
     true
   end
+
+  def autoreconnect
+    unless $autoreconnect == false
+      loop do
+        if sign_on #start_client
+          break
+        end
+      end
+    end
+  end
+
 
   def return_to_server_list
     puts "returned to server list"
@@ -96,20 +101,20 @@ class GlobalChatController
   end
 
   def begin_async_read_queue
-    # changed from Queue to Thread
     Thread.new do
       loop do
-        # sleep 0.1
         data = ""
-        # begin
-        while line = @ts.recv(1)
-          break if line == "\0"
-          data += line
+        sleep 0.1
+        begin
+          while line = @ts.recv(1)
+            raise if @last_ping < Time.now - 30
+            break if line == "\0"
+            data += line
+          end
+        rescue
+          autoreconnect
+          break
         end
-        # rescue
-        #   autoreconnect
-        #   break
-        # end
         p data
         parse_line(data)
       end
@@ -120,7 +125,14 @@ class GlobalChatController
     # p @nicks_table
     $activity.run_on_ui_thread do
       if !@nicks_table.nil? && !@nicks.nil?
-        # @nicks_table.reload_list(@nicks)
+        # begin
+        #   @nicks_table.reload_list(@nicks)
+        # rescue
+        #   log "crashed trying to handle handles"
+        #   log "nicks table #{@nicks_table.inspect}"
+        #   log "nicks table #{@nicks.inspect}"
+
+        # end
       end
     end
   end
@@ -129,26 +141,23 @@ class GlobalChatController
     parr = line.split("::!!::")
     command = parr.first
     if command == "TOKEN"
-      $autoreconnect = true
       @chat_token = parr[1]
       @handle = parr[2]
       @server_name = parr[3]
       log "Connected to #{@server_name} \n"
-      get_handles
       get_log
       $connected = true
     elsif command == "PONG"
       @nicks = parr.last.split("\n")
       reload_nicks
-      # ping
-    elsif command == "HANDLES"
+      ping
+    elsif command == "HANDLES" # deprecated?
       @nicks = parr.last.split("\n")
       reload_nicks
     elsif command == "BUFFER"
       buffer = parr[1]
-      unless buffer.nil?
-        @chat_buffer = buffer
-        update_and_scroll
+      unless buffer == "" || buffer == nil
+        output_to_chat_window(buffer)
       end
     elsif command == "SAY"
       handle = parr[1]
@@ -161,16 +170,18 @@ class GlobalChatController
       handle = parr[1]
       output_to_chat_window("#{handle} has exited\n")
     elsif command == "ALERT"
-      $autoreconnect = false
+      # if you get an alert
+      # you logged in wrong
+      # native alerts
+      # are not part of
+      # chat experience
       text = parr[1]
-      log(text)
-      return_to_server_list
-      # log("#{text}\n") do
-      #   return_to_server_list
-      # end
+      log("#{text}\n")
+
+      # exit
+      # @ts.close
     end
   end
-
 
   def send_message(opcode, args)
     msg = opcode + "::!!::" + args.join("::!!::")
@@ -178,42 +189,25 @@ class GlobalChatController
   end
 
   def sock_send io, msg
-    # begin
-    p msg
-    msg = "#{msg}\0"
-    io.send msg, 0
-    # rescue
-    #   autoreconnect
-    # end
-  end
-
-
-
-  def autoreconnect
-    #Thread.new do
-    unless $autoreconnect == false
-      loop do
-        break if $connected == true
-        $activity.run_on_ui_thread do
-          output_to_chat_window("Could not connect to GlobalChat. Will retry in 5 seconds..")
-          NSLog "connected? #{$connected}"
-          sign_on
-        end
-        sleep 5
-      end
+    begin
+      p msg
+      msg = "#{msg}\0"
+      io.send msg, 0
+    rescue
+      autoreconnect
     end
-    #end
   end
 
   def post_message(message)
     send_message "MESSAGE", [message, @chat_token]
-    add_msg(self.handle, message)
+    #add_msg(self.handle, message)
   end
 
   def add_msg(handle, message)
     if @handle != handle && message.include?(@handle)
-      # FIXME: Android
-      #NSBeep()
+      # print "\a"
+      @msg_count ||= 0
+      @msg_count += 1
     end
     msg = "#{handle}: #{message}\n"
     output_to_chat_window(msg)
@@ -232,16 +226,13 @@ class GlobalChatController
     @ts.close
   end
 
-  def log str
-    # NSLog str
-    p str
-    output_to_chat_window(str)
-  end
-
   def ping
-    # sleep 3
     @last_ping = Time.now
     send_message("PING", [@chat_token])
+  end
+
+  def log str
+    output_to_chat_window(str)
   end
 
   def output_to_chat_window str
@@ -250,5 +241,6 @@ class GlobalChatController
       update_and_scroll
     end
   end
+
 
 end
