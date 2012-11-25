@@ -2,6 +2,7 @@ require 'ruboto/widget'
 require 'ruboto/util/toast'
 require 'ruboto/activity'
 
+require 'pstore'
 
 ruboto_import_widgets :Button, :LinearLayout, :TextView, :ListView, :EditText, :ScrollView
 
@@ -11,20 +12,29 @@ class ServerList
 
   attr_accessor :handle_text, :password_text, :host_text, :port_text
 
-  def load_preferences
-    e = getPreferences(Context::MODE_PRIVATE)
-    handle = e.getString("Handle", "")
-    port = e.getString("Port", "")
-    host = e.getString("Host", "")
-    { :handle => handle, :port => port, :host => host }
+  def load_prefs
+    @pstore = PStore.new("gchat2pro.pstore")
+    begin
+      @pstore.transaction do
+        $activity.run_on_ui_thread do
+          @handle_text.setText(@pstore["handle"] || "")
+          @host_text.setText(@pstore["host"] || "")
+          @port_text.setText(@pstore["port"] || "")
+        end
+      end
+    rescue
+      puts "no pstore yet"
+    end
   end
 
-  def save_preferences(options)
-    e = getPreferences(Context::MODE_PRIVATE).edit
-    e.putString("handle", options[:handle])
-    e.putString("host", options[:host])
-    e.putString("port", options[:port])
-    e.commit
+  def save_prefs
+    @pstore.transaction do
+      $activity.run_on_ui_thread do
+        @pstore["handle"] = @handle_text.getText.toString
+        @pstore["host"] = @host_text.getText.toString
+        @pstore["port"] = @port_text.getText.toString
+      end
+    end
   end
 
   def on_stop
@@ -69,28 +79,30 @@ class ServerList
             })
           end
 
-          # pref = load_preferences
           linear_layout :orientation => :vertical do
 
             linear_layout :orientation => :horizontal do
               text_view :text => "Handle"
-              @handle_text = edit_text :width => 200, :text => 'jsilver' #pref[:handle]
+              @handle_text = edit_text :width => 200
             end
 
             linear_layout :orientation => :horizontal do
               text_view :text => "Host"
-              @host_text = edit_text :width => 350, :text => 'globalchat2.net' #pref[:host]
+              @host_text = edit_text :width => 350
             end
 
             linear_layout :orientation => :horizontal do
               text_view :text => "Port"
-              @port_text = edit_text :width => 200, :text => '9994' #pref[:port]
+              @port_text = edit_text :width => 200
             end
 
             linear_layout :orientation => :horizontal do
               text_view :text => "Password"
-              @password_text = edit_text :width => 200, :transformation_method => android.text.method.PasswordTransformationMethod.new
+              @password_text = edit_text :width => 200
             end
+
+
+            load_prefs
 
             linear_layout :orientation => :horizontal do
               @connect_button = button :text => "Connect", :on_click_listener => proc { start_gc2_activity }
@@ -107,7 +119,8 @@ class ServerList
 
   def start_gc2_activity
     # @connect_button.setVisibility(8)
-    save_preferences(:handle => @handle_text.getText.toString, :host => @host_text.getText.toString, :port => @port_text.getText.toString)
+    save_prefs
+
     i = android.content.Intent.new
     i.setClassName($package_name, 'org.ruboto.RubotoActivity')
     configBundle = android.os.Bundle.new

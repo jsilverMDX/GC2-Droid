@@ -1,4 +1,3 @@
-require 'uri'
 require 'socket'
 
 class GlobalChatController
@@ -29,10 +28,12 @@ class GlobalChatController
   end
 
   def cleanup
-    @chat_message.setText('')
-    @nicks = []
-    reload_nicks
-    @chat_window_text.setText('')
+    $activity.run_on_ui_thread do
+      @chat_message.setText('')
+      @nicks = []
+      reload_nicks
+      @chat_window_text.setText('')
+    end
   end
 
   def sendMessage(message)
@@ -65,6 +66,7 @@ class GlobalChatController
   end
 
   def sign_on
+    log "connecting to #{@host}:#{@port}"
     # begin
     @ts = TCPSocket.open(@host, @port)
     # rescue
