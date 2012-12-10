@@ -63,45 +63,39 @@ class ServerList
       run_on_ui_thread do
         self.content_view =
         linear_layout :orientation => :vertical do
-
-          scroll_view :layout => {:weight= => 2} do
-            @server_list = list_view(
-                :list => @names, :height => :match_parent,
-                :on_item_click_listener => proc { |av, v, p, i|
-                  host = @server_list_hash[p][:host]
-                  port = @server_list_hash[p][:port]
-                  @host_text.setText host
-                  @port_text.setText port
-                })
-          end
-
+          @server_list = list_view(
+              :list => @names, :layout => {:weight= => 1, :height= => :match_parent},
+              :on_item_click_listener => proc { |av, v, p, i|
+                @handle_text.text = @server_list_hash[p][:name]
+                @host_text.text = @server_list_hash[p][:host]
+                @port_text.text = @server_list_hash[p][:port]
+              })
           linear_layout :orientation => :vertical do
-
+            label_width = 130
             linear_layout :orientation => :horizontal do
-              text_view :text => "Handle"
-              @handle_text = edit_text :width => 200
+              text_view :text => "Handle", :width => label_width
+              @handle_text = edit_text :width => :match_parent
             end
-
             linear_layout :orientation => :horizontal do
-              text_view :text => "Host"
-              @host_text = edit_text :width => 350
+              text_view :text => "Host", :width => label_width
+              @host_text = edit_text :width => :match_parent
             end
-
             linear_layout :orientation => :horizontal do
-              text_view :text => "Port"
-              @port_text = edit_text :width => 200
+              text_view :text => "Port", :width => label_width
+              @port_text = edit_text :width => :match_parent
             end
-
             linear_layout :orientation => :horizontal do
-              text_view :text => "Password"
-              @password_text = edit_text :width => 200
+              text_view :text => "Password", :width => label_width
+              @password_text = edit_text :width => :match_parent
             end
 
             load_prefs
 
-            linear_layout :orientation => :horizontal do
-              @connect_button = button :text => "Connect", :on_click_listener => proc { start_gc2_activity }
-              button :text => "Refresh", :on_click_listener => proc { refresh_me }
+            linear_layout :orientation => :horizontal, :width => :match_parent do
+              @connect_button = button :text => "Connect", :layout => {:weight= => 1},
+                                       :on_click_listener => proc { start_gc2_activity }
+              button :text => "Refresh", :layout => {:weight= => 1},
+                     :on_click_listener => proc { refresh_me }
             end
 
           end
