@@ -1,6 +1,5 @@
 require 'ruboto/widget'
 require 'ruboto/util/toast'
-require 'ruboto/activity'
 
 java_import "android.content.pm.ActivityInfo"
 
@@ -10,7 +9,6 @@ class GlobalChatActivity
   require 'global_chat_controller'
 
   def on_create(bundle)
-
     super
 
     # Thread.new do
@@ -39,10 +37,10 @@ class GlobalChatActivity
 
     # end
 
-    $gcc.host = $host
-    $gcc.port = $port
-    $gcc.handle = $handle
-    $gcc.password = $password
+    $gcc.host = intent.extras.get_string('host')
+    $gcc.port = intent.extras.get_string('port')
+    $gcc.handle = intent.extras.get_string('handle')
+    $gcc.password = intent.extras.get_string('password')
 
     $gcc.nicks_table = @nicks_table
     $gcc.chat_window_text = @chat_window_text
