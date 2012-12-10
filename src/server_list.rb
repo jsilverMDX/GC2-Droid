@@ -6,10 +6,7 @@ require 'pstore'
 
 ruboto_import_widgets :Button, :LinearLayout, :TextView, :ListView, :EditText, :ScrollView
 
-require 'global_chat'
-
 class ServerList
-
   attr_accessor :handle_text, :password_text, :host_text, :port_text
 
   def load_prefs
@@ -68,13 +65,14 @@ class ServerList
         linear_layout :orientation => :vertical do
 
           scroll_view :layout => {:weight= => 2} do
-            @server_list = list_view(:list => @names, :on_item_click_listener => proc {
-                |av, v, p, i|
-              host = @server_list_hash[p][:host]
-              port = @server_list_hash[p][:port]
-              @host_text.setText host
-              @port_text.setText port
-            })
+            @server_list = list_view(
+                :list => @names, :height => :match_parent,
+                :on_item_click_listener => proc { |av, v, p, i|
+                  host = @server_list_hash[p][:host]
+                  port = @server_list_hash[p][:port]
+                  @host_text.setText host
+                  @port_text.setText port
+                })
           end
 
           linear_layout :orientation => :vertical do
@@ -114,24 +112,17 @@ class ServerList
   end
 
   def start_gc2_activity
-    # @connect_button.setVisibility(8)
     save_prefs
-
     i = android.content.Intent.new
-    i.setClassName($package_name, 'org.ruboto.RubotoActivity')
-    configBundle = android.os.Bundle.new
-    configBundle.put_string('ClassName', 'GlobalChatActivity')
-    i.putExtra('RubotoActivity Config', configBundle)
-    # intent.putExtra("host", @host_text.getText.toString)
-    $host = @host_text.getText.toString
-    # intent.putExtra("port", @port_text.getText.toString)
-    $port = @port_text.getText.toString
-    # intent.putExtra("handle", @handle_text.getText.toString)
-    $handle = @handle_text.getText.toString
-    # intent.putExtra("password", @password_text.getText.toString)
-    $password = @password_text.getText.toString
-
-    startActivity(i)
+    i.set_class_name($package_name, 'org.ruboto.RubotoActivity')
+    bundle = android.os.Bundle.new
+    bundle.put_string('ClassName', 'GlobalChatActivity')
+    i.put_extra("host", @host_text.text.toString)
+    i.put_extra("port", @port_text.text.toString)
+    i.put_extra("handle", @handle_text.text.toString)
+    i.put_extra("password", @password_text.text.toString)
+    i.put_extra('RubotoActivity Config', bundle)
+    start_activity(i)
   end
 
 end
