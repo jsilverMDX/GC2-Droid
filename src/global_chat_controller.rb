@@ -1,34 +1,34 @@
 require 'socket'
 
 class GlobalChatController
-
   attr_accessor :chat_token,
-  :chat_buffer,
-  :nicks, :handle,
-  :handle_text_field,
-  :connect_button,
-  :server_list_window,
-  :chat_window,
-  :chat_window_text,
-  :chat_message,
-  :nicks_table,
-  :application,
-  :scroll_view,
-  :last_scroll_view_height,
-  :host,
-  :port,
-  :password,
-  :ts,
-  :msg_count
+                :chat_buffer,
+                :nicks, :handle,
+                :handle_text_field,
+                :connect_button,
+                :server_list_window,
+                :chat_window,
+                :chat_window_text,
+                :chat_message,
+                :nicks_table,
+                :application,
+                :scroll_view,
+                :last_scroll_view_height,
+                :host,
+                :port,
+                :password,
+                :ts,
+                :msg_count
 
-  def initialize
+  def initialize(activity)
+    @activity = activity
     @mutex = Mutex.new
     @sent_messages = []
     @sent_msg_index = 0
   end
 
   def cleanup
-    $activity.run_on_ui_thread do
+    @activity.run_on_ui_thread do
       @chat_message.setText('')
       @nicks = []
       reload_nicks
@@ -38,7 +38,7 @@ class GlobalChatController
 
   def sendMessage(message)
     # begin
-    $activity.run_on_ui_thread do
+    @activity.run_on_ui_thread do
       @message = @chat_message.getText.toString
       if @message != ""
         post_message(@message)
@@ -57,7 +57,7 @@ class GlobalChatController
   end
 
   def update_chat_views
-    $activity.run_on_ui_thread do
+    @activity.run_on_ui_thread do
       if !(@chat_window_text == nil) && !(@scroll_view == nil)
         @chat_window_text.setText(@chat_buffer)
         @scroll_view.fullScroll(130)
@@ -76,10 +76,15 @@ class GlobalChatController
     # end
     @last_ping = Time.now # fake ping
     sign_on_array = @password == "" ? [@handle] : [@handle, @password]
+    puts "send message SIGNON"
     send_message("SIGNON", sign_on_array)
+    puts "send message SIGNON...OK"
     begin_async_read_queue
     $autoreconnect = true
     true
+  rescue Exception
+    puts "Exception signing on: #{$!.message}"
+    puts $!.backtrace
   end
 
   # def autoreconnect
@@ -96,7 +101,8 @@ class GlobalChatController
   def return_to_server_list
     puts "returned to server list"
     $autoreconnect = false
-    @ts.disconnect
+    # @ts.disconnect
+    @ts.close
     #... load SL activity
   end
 
@@ -106,12 +112,15 @@ class GlobalChatController
   end
 
   def begin_async_read_queue
+    puts "begin_async_read_queue"
     Thread.new do
       loop do
         data = ""
         # sleep 0.1
         # begin
+        puts "read line"
         while line = @ts.recv(1)
+          puts "line: #{line.inspect}"
           # raise if @last_ping < Time.now - 30
           break if line == "\0"
           data += line
@@ -127,15 +136,15 @@ class GlobalChatController
   end
 
   def reload_nicks
-    $activity.run_on_ui_thread do
-      if !@nicks_table == nil && !@nicks == nil
-        @nicks_table.reload_list(@nicks)
+    @activity.run_on_ui_thread do
+      if @nicks
+        @activity.update_nicks(@nicks)
       end
     end
   end
 
   def parse_line(line)
-    p line
+    puts "parse_line: #{line.inspect}"
     parr = line.split("::!!::")
     command = parr.first
     if command == "TOKEN"
@@ -234,7 +243,7 @@ class GlobalChatController
   end
 
   def output_to_chat_window str
-    puts str
+    puts "chat output: #{str.inspect}"
     @mutex.synchronize do
       @chat_buffer += "#{str}"
       update_and_scroll
