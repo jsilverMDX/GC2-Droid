@@ -16,7 +16,7 @@ class ServerList
     @pstore = PStore.new("gchat2pro.pstore")
     begin
       @pstore.transaction do
-        $activity.run_on_ui_thread do
+        run_on_ui_thread do
           @handle_text.setText(@pstore["handle"] || "")
           @host_text.setText(@pstore["host"] || "")
           @port_text.setText(@pstore["port"] || "")
@@ -29,7 +29,7 @@ class ServerList
 
   def save_prefs
     @pstore.transaction do
-      $activity.run_on_ui_thread do
+      run_on_ui_thread do
         @pstore["handle"] = @handle_text.getText.toString
         @pstore["host"] = @host_text.getText.toString
         @pstore["port"] = @port_text.getText.toString
@@ -42,7 +42,6 @@ class ServerList
     puts "saving preferences"
   end
 
-
   def on_create(bundle)
     super
     set_title 'Server List'
@@ -52,26 +51,25 @@ class ServerList
     puts $!.backtrace.join("\n")
   end
 
-
   def refresh_me
     Thread.new {
       require 'net/http'
       @server_list_hash = Net::HTTP.get('nexusnet.herokuapp.com', '/msl').
-      split("\n").
-      collect do |s|
+          split("\n").
+          collect do |s|
         par = s.split("-!!!-")
-        {:host => par[1], :name => par[0], :port => par[2]}
+        {:name => par[0], :host => par[1], :port => par[2]}
       end
 
       @names = @server_list_hash.map { |i| i[:name] }
 
-      $activity.run_on_ui_thread do
+      run_on_ui_thread do
         self.content_view =
         linear_layout :orientation => :vertical do
 
-          scroll_view do
+          scroll_view :layout => {:weight= => 2} do
             @server_list = list_view(:list => @names, :on_item_click_listener => proc {
-              |av, v, p, i|
+                |av, v, p, i|
               host = @server_list_hash[p][:host]
               port = @server_list_hash[p][:port]
               @host_text.setText host
@@ -101,7 +99,6 @@ class ServerList
               @password_text = edit_text :width => 200
             end
 
-
             load_prefs
 
             linear_layout :orientation => :horizontal do
@@ -115,7 +112,6 @@ class ServerList
       end
     }
   end
-
 
   def start_gc2_activity
     # @connect_button.setVisibility(8)
