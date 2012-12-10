@@ -137,8 +137,8 @@ class GlobalChatController
 
   def reload_nicks
     @activity.run_on_ui_thread do
-      if !@nicks_table == nil && !@nicks == nil
-        @nicks_table.reload_list(@nicks)
+      if @nicks
+        @activity.update_nicks(@nicks)
       end
     end
   end

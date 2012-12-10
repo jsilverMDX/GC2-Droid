@@ -17,7 +17,7 @@ class GlobalChatActivity
     self.content_view =
     linear_layout :orientation => :vertical do
       linear_layout :layout => {:weight= => 1, :width= => :fill_parent, :height= => :match_parent} do
-        @nicks_table = list_view :list => @gcc.nicks, :background_color => android.graphics.Color::BLUE,
+        @nicks_table = list_view :list => [], :background_color => android.graphics.Color::BLUE,
                                  :layout => {:width= => 200, :height= => :fill_parent}
         @scroll_view = scroll_view(:layout => {:width= => :fill_parent, :height= => :fill_parent}) do
           @chat_window_text = text_view :text => '', :layout => {:width= => :fill_parent, :height= => :fill_parent}
@@ -50,9 +50,18 @@ class GlobalChatActivity
     # setRequestedOrientation(0)
   end
 
+  def on_resume
+    super
+    @gcc.nicks
+  end
+
   def on_pause
     super
     @gcc.return_to_server_list
   end
 
+  def update_nicks(nicks)
+    @nicks_table.adapter.clear
+    @nicks_table.adapter.add_all(nicks)
+  end
 end
