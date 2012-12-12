@@ -17,13 +17,13 @@ class GlobalChatActivity
         @nicks_table = list_view :list => [], :background_color => android.graphics.Color::BLUE,
                                  :layout => {:width= => 200, :height= => :fill_parent}
         @scroll_view = scroll_view(:layout => {:width= => :fill_parent, :height= => :fill_parent}) do
-          @chat_window_text = text_view :text => '', :layout => {:width= => :fill_parent, :height= => :fill_parent}
+          @chat_window_text = text_view :text => '', :margins => [10,0,0,100], :layout => {:width= => :fill_parent, :height= => :fill_parent}
         end
       end
       linear_layout :orientation => :horizontal, :layout => {:width= => :fill_parent, :height= => :wrap_content} do
         @chat_message = edit_text :text => '', :layout => {:weight= => 1, :width= => :fill_parent, :height= => :wrap_content}
         @send_button = button :text => 'Send', :layout => {:width= => :wrap_content, :height= => :wrap_content},
-                              :on_click_listener => proc {Thread.start{@gcc.post_message(@chat_message.text)};@chat_message.text = ''}
+                              :on_click_listener => proc {Thread.start{@gcc.post_message(@chat_message.text.to_s)};@chat_message.text = ''}
       end
     end
 

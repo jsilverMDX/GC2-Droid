@@ -194,13 +194,14 @@ class GlobalChatController
   end
 
   def send_message(opcode, args)
+    puts "send_message: #{opcode} #{args}"
     msg = opcode + "::!!::" + args.join("::!!::")
     sock_send @ts, msg
   end
 
   def sock_send io, msg
     # begin
-    p msg
+    puts "sock_send: #{msg}"
     msg = "#{msg}\0"
     io.send msg, 0
     # rescue
@@ -209,11 +210,14 @@ class GlobalChatController
   end
 
   def post_message(message)
+    puts "post_message: #{message.inspect}"
+    return if (message.nil? || message.empty?)
     send_message "MESSAGE", [message, @chat_token]
-    #add_msg(self.handle, message)
+    add_msg(self.handle, message)
   end
 
   def add_msg(handle, message)
+    puts "add_message: #{message}"
     if @handle != handle && message.include?(@handle)
       # print "\a"
       @msg_count ||= 0

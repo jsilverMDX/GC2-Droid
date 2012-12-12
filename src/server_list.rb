@@ -50,7 +50,7 @@ class ServerList
           @connect_button = button :text => "Connect", :layout => {:weight= => 1},
                                    :on_click_listener => proc { start_gc2_activity }
           button :text => "Refresh", :layout => {:weight= => 1},
-                 :on_click_listener => proc { refresh_me }
+                 :on_click_listener => proc { refresh_ui }
         end
 
       end
@@ -80,7 +80,10 @@ class ServerList
           {:name => par[0], :host => par[1], :port => par[2]}
         end
         @names = @server_list_hash.map { |i| i[:name] }
-        run_on_ui_thread{@names.each{|n| @server_list.adapter.add(n)}}
+        run_on_ui_thread do
+          @server_list.adapter.clear
+          @names.each{|n| @server_list.adapter.add(n)}
+        end
       rescue Exception
         puts "Exception refreshing UI: #{$!}"
         puts $!.backtrace.join("\n")
