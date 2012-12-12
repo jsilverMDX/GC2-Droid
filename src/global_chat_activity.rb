@@ -12,8 +12,7 @@ class GlobalChatActivity
 
     @gcc = GlobalChatController.new(self)
 
-    self.content_view =
-    linear_layout :orientation => :vertical do
+    self.content_view = linear_layout :orientation => :vertical do
       linear_layout :layout => {:weight= => 1, :width= => :fill_parent, :height= => :match_parent} do
         @nicks_table = list_view :list => [], :background_color => android.graphics.Color::BLUE,
                                  :layout => {:width= => 200, :height= => :fill_parent}
