@@ -60,6 +60,6 @@ class GlobalChatActivity
 
   def update_nicks(nicks)
     @nicks_table.adapter.clear
-    @nicks_table.adapter.add_all(nicks)
+    nicks.each{|n| @nicks_table.adapter.add(n)}
   end
 end
