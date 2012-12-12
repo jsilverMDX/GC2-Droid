@@ -104,6 +104,9 @@ class GlobalChatController
     # @ts.disconnect
     @ts.close
     #... load SL activity
+  rescue Exception
+    puts "Exception closing connection: #{$!}"
+    puts $!.backtrace
   end
 
   def update_and_scroll
