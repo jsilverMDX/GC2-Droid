@@ -115,7 +115,7 @@ class ServerList
     i.put_extra("port", @port_text.text.toString)
     i.put_extra("handle", @handle_text.text.toString)
     i.put_extra("password", @password_text.text.toString)
-    i.put_extra('RubotoActivity Config', bundle)
+    i.put_extra('Ruboto Config', bundle)
     start_activity(i)
   end
 
