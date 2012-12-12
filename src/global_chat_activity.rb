@@ -1,13 +1,11 @@
 require 'ruboto/widget'
 require 'ruboto/util/toast'
-
-java_import "android.content.pm.ActivityInfo"
+require 'ruboto/activity'
+require 'global_chat_controller'
 
 ruboto_import_widgets :LinearLayout, :TextView, :ListView, :EditText
 
 class GlobalChatActivity
-  require 'global_chat_controller'
-
   def on_create(bundle)
     super
     set_title 'GlobalChat2'
