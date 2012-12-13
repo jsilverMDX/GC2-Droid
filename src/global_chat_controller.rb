@@ -2,23 +2,23 @@ require 'socket'
 
 class GlobalChatController
   attr_accessor :chat_token,
-                :chat_buffer,
-                :nicks, :handle,
-                :handle_text_field,
-                :connect_button,
-                :server_list_window,
-                :chat_window,
-                :chat_window_text,
-                :chat_message,
-                :nicks_table,
-                :application,
-                :scroll_view,
-                :last_scroll_view_height,
-                :host,
-                :port,
-                :password,
-                :ts,
-                :msg_count
+  :chat_buffer,
+  :nicks, :handle,
+  :handle_text_field,
+  :connect_button,
+  :server_list_window,
+  :chat_window,
+  :chat_window_text,
+  :chat_message,
+  :nicks_table,
+  :application,
+  :scroll_view,
+  :last_scroll_view_height,
+  :host,
+  :port,
+  :password,
+  :ts,
+  :msg_count
 
   def initialize(activity)
     @activity = activity
@@ -155,6 +155,7 @@ class GlobalChatController
       @handle = parr[2]
       @server_name = parr[3]
       log "Connected to #{@server_name} \n"
+      ping # fix for GlobalChatNet
       get_log
       $connected = true
     elsif command == "PONG"
