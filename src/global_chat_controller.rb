@@ -221,7 +221,7 @@ class GlobalChatController
     puts "add_message: #{message}"
     if @handle != handle && message.include?(@handle)
       # vibrate
-      getSystemService(Context::VIBRATOR_SERVICE).vibrate(500, 500, -1)
+      getSystemService(Context::VIBRATOR_SERVICE).vibrate(2000, -1)
       @msg_count ||= 0
       @msg_count += 1
     end
