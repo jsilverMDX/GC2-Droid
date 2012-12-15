@@ -149,7 +149,7 @@ class GlobalChatController
   def update_title(title)
     @activity.run_on_ui_thread do
       if @server_name
-        @activity.title(title)
+        @activity.update_title(title)
       end
     end
   end
