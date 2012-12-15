@@ -16,7 +16,7 @@ class GlobalChatActivity
       linear_layout :layout => {:weight= => 1, :width= => :fill_parent, :height= => :match_parent} do
         @nicks_table = list_view :list => [], :background_color => android.graphics.Color::BLUE,
         :layout => {:width= => 200, :height= => :fill_parent},
-        :on_item_click_listener => proc { |av, v, p, i| @chat_message.text = "#{p}: " }
+        :on_item_click_listener => proc { |av, v, p, i| @chat_message.text = "#{v.text}: " ; @chat_message.setSelection(@chat_message.getText().length()) }
         @scroll_view = scroll_view(:layout => {:width= => :fill_parent, :height= => :fill_parent}) do
           @chat_window_text = text_view :text => '', :margins => [10,0,0,100], :layout => {:width= => :fill_parent, :height= => :fill_parent}
         end
