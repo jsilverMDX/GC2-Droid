@@ -62,4 +62,8 @@ class GlobalChatActivity
     @nicks_table.adapter.clear
     nicks.each{|n| @nicks_table.adapter.add(n)}
   end
+
+  def update_title(title)
+    set_title title
+  end
 end

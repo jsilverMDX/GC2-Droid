@@ -146,6 +146,14 @@ class GlobalChatController
     end
   end
 
+  def update_title(title)
+    @activity.run_on_ui_thread do
+      if @server_name
+        @activity.title(title)
+      end
+    end
+  end
+
   def parse_line(line)
     puts "parse_line: #{line.inspect}"
     parr = line.split("::!!::")
@@ -154,6 +162,7 @@ class GlobalChatController
       @chat_token = parr[1]
       @handle = parr[2]
       @server_name = parr[3]
+      update_title(@server_name)
       log "Connected to #{@server_name} \n"
       ping # fix for GlobalChatNet
       get_log
