@@ -1,6 +1,4 @@
 require 'ruboto/widget'
-require 'ruboto/util/toast'
-require 'ruboto/activity'
 require 'global_chat_controller'
 
 ruboto_import_widgets :LinearLayout, :TextView, :ListView, :EditText

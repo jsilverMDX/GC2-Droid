@@ -10,11 +10,6 @@ ruboto_import_widgets :Button, :LinearLayout, :TextView, :ListView, :EditText, :
 class ServerList
   attr_accessor :handle_text, :password_text, :host_text, :port_text
 
-  def on_stop
-    super
-    puts "saving preferences"
-  end
-
   def on_create(bundle)
     super
     set_title 'Server List'
@@ -65,6 +60,11 @@ class ServerList
     super
     refresh_ui
     load_prefs
+  end
+
+  def on_stop
+    super
+    puts "saving preferences"
   end
 
   private
