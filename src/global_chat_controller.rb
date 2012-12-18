@@ -132,7 +132,7 @@ class GlobalChatController
         # begin
         puts "read line"
         while line = @ts.recv(1)
-          puts "line: #{line.inspect}"
+          # puts "line: #{line.inspect}"
           # raise if @last_ping < Time.now - 30
           break if line == "\0"
           data += line

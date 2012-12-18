@@ -16,12 +16,12 @@ class ServerList
 
     self.content_view = linear_layout :orientation => :vertical do
       @server_list = list_view(
-          :list => [], :layout => {:weight= => 1, :height= => :match_parent},
-          :on_item_click_listener => proc { |av, v, p, i|
-            @handle_text.text = @server_list_hash[p][:name]
-            @host_text.text = @server_list_hash[p][:host]
-            @port_text.text = @server_list_hash[p][:port]
-          })
+      :list => [], :layout => {:weight= => 1, :height= => :match_parent},
+      :on_item_click_listener => proc { |av, v, p, i|
+        @handle_text.text = @server_list_hash[p][:name]
+        @host_text.text = @server_list_hash[p][:host]
+        @port_text.text = @server_list_hash[p][:port]
+      })
       linear_layout :orientation => :vertical do
         label_width = 130
         linear_layout :orientation => :horizontal do
@@ -43,14 +43,17 @@ class ServerList
 
         linear_layout :orientation => :horizontal, :width => :match_parent do
           @connect_button = button :text => "Connect", :layout => {:weight= => 1},
-                                   :on_click_listener => proc { start_gc2_activity }
+          :on_click_listener => proc { start_gc2_activity }
           button :text => "Refresh", :layout => {:weight= => 1},
-                 :on_click_listener => proc { refresh_ui }
+          :on_click_listener => proc { refresh_ui }
         end
 
       end
 
     end
+
+    setRequestedOrientation(1)
+
   rescue
     puts "Exception creating activity: #{$!}"
     puts $!.backtrace.join("\n")
@@ -62,10 +65,10 @@ class ServerList
     load_prefs
   end
 
-  def on_stop
-    super
-    puts "saving preferences"
-  end
+  # def on_stop
+  #   super
+  #   puts "saving preferences"
+  # end
 
   private
 
@@ -74,8 +77,8 @@ class ServerList
       begin
         require 'net/http'
         @server_list_hash = Net::HTTP.get('nexusnet.herokuapp.com', '/msl').
-            split("\n").
-            collect do |s|
+        split("\n").
+        collect do |s|
           par = s.split("-!!!-")
           {:name => par[0], :host => par[1], :port => par[2]}
         end
