@@ -76,13 +76,13 @@ class GlobalChatController
 
   def sign_on
     log "connecting to #{@host}:#{@port}\n"
-    # begin
-    @ts = TCPSocket.open(@host, @port)
-    # rescue
-    #   log("Could not connect to GlobalChat server. Will retry in 5 seconds.")
-    #   sleep 5
-    #   return false
-    # end
+    begin
+      @ts = TCPSocket.open(@host, @port)
+    rescue
+      log("Could not connect to GlobalChat server. Will retry in 5 seconds.")
+      # sleep 5
+      return false
+    end
     @last_ping = Time.now # fake ping
     sign_on_array = @password == "" ? [@handle] : [@handle, @password]
     puts "send message SIGNON"
@@ -91,16 +91,16 @@ class GlobalChatController
     begin_async_read_queue
     $autoreconnect = true
     true
-  rescue Exception
-    puts "Exception signing on: #{$!.message}"
-    puts $!.backtrace
   end
 
   def autoreconnect
     unless $autoreconnect == false
-      loop do
-        if sign_on #start_client
-          break
+      Thread.new do
+        loop do
+          sleep 5
+          if sign_on #start_client
+            break
+          end
         end
       end
     end
