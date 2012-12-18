@@ -20,6 +20,8 @@ class GlobalChatController
   :ts,
   :msg_count
 
+  # WARNING: always log with newline \n
+
   def initialize(activity)
     @activity = activity
     @mutex = Mutex.new
@@ -64,7 +66,7 @@ class GlobalChatController
     end
     if !(@scroll_view == nil)
       Thread.new do
-        sleep 0.5
+        sleep 0.1
         @activity.run_on_ui_thread do
           @scroll_view.fullScroll(130) # wrong
         end
@@ -73,7 +75,7 @@ class GlobalChatController
   end
 
   def sign_on
-    log "connecting to #{@host}:#{@port}"
+    log "connecting to #{@host}:#{@port}\n"
     # begin
     @ts = TCPSocket.open(@host, @port)
     # rescue
