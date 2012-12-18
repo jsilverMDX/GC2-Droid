@@ -58,9 +58,16 @@ class GlobalChatController
 
   def update_chat_views
     @activity.run_on_ui_thread do
-      if !(@chat_window_text == nil) && !(@scroll_view == nil)
+      if !(@chat_window_text == nil)
         @chat_window_text.setText(@chat_buffer)
-        @scroll_view.fullScroll(130)
+      end
+    end
+    if !(@scroll_view == nil)
+      Thread.new do
+        sleep 0.5
+        @activity.run_on_ui_thread do
+          @scroll_view.fullScroll(130) # wrong
+        end
       end
     end
   end
