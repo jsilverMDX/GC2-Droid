@@ -39,17 +39,17 @@ class GlobalChatController
   end
 
   def sendMessage(message)
-    # begin
-    @activity.run_on_ui_thread do
-      @message = @chat_message.getText.toString
-      if @message != ""
-        post_message(@message)
-        @chat_message.setText('')
+    begin
+      @activity.run_on_ui_thread do
+        @message = @chat_message.getText.toString
+        if @message != ""
+          post_message(@message)
+          @chat_message.setText('')
+        end
       end
+    rescue
+      autoreconnect
     end
-    # rescue
-    # autoreconnect
-    # end
   end
 
   def scroll_the_scroll_view_down
@@ -96,15 +96,15 @@ class GlobalChatController
     puts $!.backtrace
   end
 
-  # def autoreconnect
-  #   unless $autoreconnect == false
-  #     loop do
-  #       if sign_on #start_client
-  #         break
-  #       end
-  #     end
-  #   end
-  # end
+  def autoreconnect
+    unless $autoreconnect == false
+      loop do
+        if sign_on #start_client
+          break
+        end
+      end
+    end
+  end
 
 
   def return_to_server_list
@@ -129,18 +129,18 @@ class GlobalChatController
       loop do
         data = ""
         # sleep 0.1
-        # begin
-        puts "read line"
-        while line = @ts.recv(1)
-          # puts "line: #{line.inspect}"
-          # raise if @last_ping < Time.now - 30
-          break if line == "\0"
-          data += line
+        begin
+          puts "read line"
+          while line = @ts.recv(1)
+            # puts "line: #{line.inspect}"
+            # raise if @last_ping < Time.now - 30
+            break if line == "\0"
+            data += line
+          end
+        rescue
+          autoreconnect
+          break
         end
-        # rescue
-        #   autoreconnect
-        #   break
-        # end
 
         parse_line(data)
       end
@@ -219,13 +219,13 @@ class GlobalChatController
   end
 
   def sock_send io, msg
-    # begin
-    puts "sock_send: #{msg}"
-    msg = "#{msg}\0"
-    io.send msg, 0
-    # rescue
-    # autoreconnect
-    # end
+    begin
+      puts "sock_send: #{msg}"
+      msg = "#{msg}\0"
+      io.send msg, 0
+    rescue
+      autoreconnect
+    end
   end
 
   def post_message(message)
